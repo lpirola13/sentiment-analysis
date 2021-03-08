@@ -1,0 +1,14 @@
+body {
+    font-family: "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+
+.bg-custom-2 {
+background-image: linear-gradient(to left, #00c6ff, #0072ff) !important;
+}
+
+.text-gradient {
+  display: inline-block;
+    font-size: 60px !important;
+  color: #00c6ff;
+}
