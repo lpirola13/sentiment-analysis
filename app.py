@@ -1,12 +1,13 @@
+import re
 import dash
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
+import numpy as np
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from ElasticSearchClient import ElasticSearchClient
-from math import floor
-from random import shuffle
+from math import floor, isnan
 
 app = dash.Dash(__name__,
                 suppress_callback_exceptions=True,
@@ -16,7 +17,7 @@ navbar = dbc.NavbarSimple([
     dbc.NavItem(dbc.NavLink("Search Product", href='/search', className="text-white")),
     dbc.NavItem(dbc.NavLink("About", href='/about', className="text-white"))
 ],
-    brand="Sentiment Analysis",
+    brand="Feature-Based Sentiment Analysis",
     brand_href="/search",
     color="primary",
     dark=True,
@@ -41,84 +42,89 @@ app.layout = html.Div([
 ])
 
 homepage = html.Div([
-    navbar,
-    html.Div(
-        [
-            dbc.Row(
-                [
-                    dbc.Col(
-                        html.Div(""),
-                        width=3
-                    ),
-                    dbc.Col(
-                        [
-                            dbc.Row([
-                                dbc.Col(
-                                    html.Div('Sentiment Analysis'),
-                                    className="d-flex justify-content-center text-gradient pb-0"
-                                )
-                            ]),
-                            dbc.Row([
-                                dbc.Col(
-                                    html.Div(' know this question is old. And the question did not mentioned which version of '
-                                             'Bootstrap he was using. So ill assume the answer to this question is resolved.'),
-                                    className="d-flex justify-content-center pr-3 pl-3 pt-0 pb-4"
-                                )
-                            ]),
-                            dbc.Row([
-                                dbc.Col(
-                                    dcc.Dropdown(placeholder="Select a product", id="search-dropdown"),
-                                    width=10
-                                ),
-                                dbc.Col(
-                                    dbc.Button("Search!", color="primary", className="mr-1", id="start-search"),
-                                    width=2
-                                )
-                            ])
-                        ],
-                        width=6
-                    ),
-                    dbc.Col(html.Div(""), width=3),
-                    html.Div(id="hidden-div")
-                ],
-                className="d-flex align-items-center justify-content-center w-100"
-            )
-        ],
-        className="d-flex vh-100"
-    )
+    dbc.Row([
+        dbc.Col([
+            navbar,
+            html.Div([
+                dbc.Row(
+                    [
+                        dbc.Col(
+                            html.Div(""),
+                            width=3,
+                            className="d-none d-lg-block"
+                        ),
+                        dbc.Col(
+                            [
+                                html.Div([
+                                    dbc.Row([
+                                        dbc.Col(
+                                            'Feature-Based Sentiment Analysis',
+                                            className="text-gradient text-center"
+                                        )
+                                    ], className="w-100", style={"line-height": "1"}),
+                                    dbc.Row([
+                                        dbc.Col(
+                                            ' know this question is old. And the question did not mentioned which version of '
+                                            'Bootstrap he was using. So ill assume the answer to this question is resolved.',
+                                            className=" pr-3 pl-3 pt-3 pb-4 text-justify"
+                                        )
+                                    ], className="w-100"),
+                                    dbc.Row([
+                                        dbc.Col(
+                                            dcc.Dropdown(placeholder="Select a product", id="search-dropdown"),
+                                            width=10
+                                        ),
+                                        dbc.Col(
+                                            dbc.Button("Search!", color="primary", className="mr-1", id="start-search"),
+                                            width=2
+                                        )
+                                    ], className="w-100")
+                                ], className="h-100 container-fluid",
+                                    style={"padding-top": "35%"})
+                            ],
+                            className="w-100 col-lg-6 col-sm-12"
+                        ),
+                        dbc.Col(html.Div(""), width=3, className="d-none d-lg-block"),
+                        html.Div(id="hidden-div")
+                    ],
+                    className="h-100"
+                )
+            ], className="container-fluid h-100")
+        ], className="w-100 h-100 p-0")
+    ], className="h-100")
 ],
-    style={"margin": "-65px 0 0 0"}
+    className="container-fluid vh-100 overflow-hidden"
 )
 
 product_page = html.Div([
-    dcc.Store(id='memory', storage_type='local'),
-    navbar,
-    html.Div(id='my-div', style={"display": "none"}),
-    html.Div([
-        dbc.Row([
-            dbc.Col([],
-                    id="first-card",
-                    className="col-4"),
-            dbc.Col([],
-                    id="second-card",
-                    className="col-8")
-        ],
-            style={"height": "26%"},
-            className="pt-3 pl-3 pr-3"
-        ),
-        dbc.Row([
-            dbc.Col(
-                reviews_card,
-                id="third-card",
-                className="col-12")
-        ],
-            style={"height": "65%"},
-            className="p-3"
-        )
-    ],
-        className="vh-100 bg-light"
-    )
-])
+    dbc.Row([
+        dbc.Col([
+            dcc.Store(id='memory', storage_type='local'),
+            navbar,
+            html.Div(id='my-div', style={"display": "none"}),
+            dbc.Row([
+                dbc.Col([],
+                        id="first-card",
+                        className=" col-4"),
+                dbc.Col([],
+                        id="second-card",
+                        className="col-8")
+            ],
+                style={"height": "26%"},
+                className="pt-3 pl-3 pr-3"
+            ),
+            dbc.Row([
+                dbc.Col(
+                    reviews_card,
+                    id="third-card",
+                    className="col-12")
+            ],
+                style={"height": "65%"},
+                className="p-3"
+            )
+        ], className="p-0")
+    ], className="h-100")
+], className="container-fluid vh-100 overflow-hidden")
 
 about_page = html.Div(
     [
@@ -159,11 +165,40 @@ def make_product_card(product_id, product):
     for star in range(len(stars) + 1, 6):
         stars.append(html.I(className="fa fa-star fa-lg "))
     keywords = []
+    features_sentiment = []
+    for feature in product['features']:
+        if 'sentiment' in feature:
+            features_sentiment.append(feature['sentiment'])
+    if len(features_sentiment) > 0:
+        product_sentiment = round(np.mean(features_sentiment), 2)
+    else:
+        product_sentiment = 0
     for keyword in product['keywords']:
         keywords.append(
             dbc.Row(html.H5(html.Span(keyword, className="badge badge-primary"), className="m-0"),
                     className="pl-3 pt-1")
         )
+    if product_sentiment > 0:
+        class_name_sentiment = "fas fa-caret-up fa-lg"
+        style_sentiment = {"color": "green"}
+    elif product_sentiment < 0:
+        class_name_sentiment = "fas fa-caret-down fa-lg"
+        style_sentiment = {"color": "red"}
+    else:
+        class_name_sentiment = "fas fa-caret-right fa-lg"
+        style_sentiment = {"color": "orange"}
+    sentiment_card = dbc.Card([
+        dbc.CardHeader([
+            html.H6('Overall Sentiment', className="m-0 text-center text-white card-title")
+        ], className="bg-custom-2"),
+        dbc.CardBody([
+            dbc.Row([
+                html.Span("{} ".format(abs(product_sentiment)) if not isnan(product_sentiment) else "0",
+                          className=class_name_sentiment,
+                          style=style_sentiment),
+            ], className="d-flex justify-content-center align-items-center")
+        ])
+    ])
     return dbc.Card(
         [
             dbc.CardHeader(
@@ -180,6 +215,8 @@ def make_product_card(product_id, product):
                             ),
                             dbc.Tooltip(
                                 [
+                                    html.Div("Total Reviews: " + str(product['reviews']),
+                                             className="text-left"),
                                     html.Div("Average Rating: " + str(round(product['rating']['avg_rating'], 2)),
                                              className="text-left"),
                                     html.Div("Five Stars: " + str(product['rating']['five_stars']),
@@ -201,7 +238,14 @@ def make_product_card(product_id, product):
                 ],
                 className="bg-custom-2 text-white"
             ),
-            dbc.CardBody(dbc.Row(dbc.Col(keywords, className="col-12")))
+            dbc.CardBody(
+                dbc.Row([
+                    dbc.Col(keywords, className="col-6"),
+                    dbc.Col([
+                        sentiment_card
+                    ], className="col-6")
+                ])
+            )
         ],
         className="h-100 shadow"
     )
@@ -212,20 +256,20 @@ def make_feature_list(features):
     for feature in features:
         if 'sentiment' in feature:
             if feature['sentiment'] > 0:
-                emoji = html.Span(className="fa fa-smile")
+                emoji = html.Span(feature['sentiment'], className="fa fa-caret-up")
                 className = "btn btn-success w-100 text-white btn"
             elif feature['sentiment'] < 0:
-                emoji = html.Span(className="fa fa-frown")
+                emoji = html.Span(feature['sentiment'], className="fa fa-caret-down")
                 className = "btn btn-danger w-100 text-white btn"
             else:
-                emoji = html.Span(className="fa fa-meh")
+                emoji = html.Span(feature['sentiment'], className="fa fa-caret-right")
                 className = "btn btn-warning w-100 text-white btn"
         else:
             emoji = ''
             className = "btn btn-info w-100 text-white btn"
         if 'sentiment' in feature:
             button = dbc.Col([
-                html.Button([feature['name'].capitalize() + ' ', emoji], className=className,
+                html.Button(["{} ".format(feature['name'].capitalize()), emoji], className=className,
                             id='button-feature-' + feature['name'])
             ])
         else:
@@ -277,7 +321,6 @@ def display_page(pathname):
     return product_card, feature_card, product
 
 
-
 def make_stars(rating):
     stars = []
     for star in range(1, int(rating) + 1):
@@ -299,8 +342,10 @@ def make_review(review, feature):
         className = "fas fa-caret-right"
     if 'text' in review:
         text = review['text']
-        start = text.find(feature)
-        text = text[:start] + "**" + text[start:start + len(feature)] + '**' + text[start + len(feature):]
+        pat = r'\b\S*%s\S*\b' % re.escape(feature)
+        matches = re.findall(pat, text)
+        for match in matches:
+            text = re.sub(r'(?<!\*){}(?!\*)'.format(match), '**{}**'.format(match), text)
     else:
         text = ""
     stars = make_stars(review['rating'])
@@ -342,6 +387,7 @@ def make_reviews_card(product, feature_name):
             flavor = feature
     positive_reviews = []
     if 'positive_sentences' in flavor:
+        flavor['positive_sentences'].sort(key=lambda x: x['sentiment'], reverse=True)
         for review in flavor['positive_sentences']:
             positive_reviews.append(make_review(review, feature_name))
     neutral_reviews = []
@@ -350,11 +396,9 @@ def make_reviews_card(product, feature_name):
             neutral_reviews.append(make_review(review, feature_name))
     negative_reviews = []
     if 'negative_sentences' in flavor:
+        flavor['negative_sentences'].sort(key=lambda x: x['sentiment'])
         for review in flavor['negative_sentences']:
             negative_reviews.append(make_review(review, feature_name))
-    shuffle(positive_reviews)
-    shuffle(neutral_reviews)
-    shuffle(negative_reviews)
     positive_indicator = None
     negative_indicator = None
     if len(positive_reviews) > 0:
@@ -371,7 +415,8 @@ def make_reviews_card(product, feature_name):
             className="float-right")
     return dbc.Card([
         dbc.CardHeader([
-            html.H5(html.B("Sentiment about " + feature_name.capitalize()), className="card-title mb-0 p-1"),
+            html.H5(html.B("Sentiment about {}: {}".format(feature_name.capitalize(), str(flavor['sentiment']))),
+                    className="card-title mb-0 p-1"),
         ], className="bg-custom-2 text-white"),
         dbc.CardBody(
             [
@@ -381,7 +426,8 @@ def make_reviews_card(product, feature_name):
                             dbc.CardHeader([
                                 dbc.Row([
                                     dbc.Col([
-                                        html.H5("Positive Reviews", className="align-bottom m-0"),
+                                        html.H5("Positive Reviews ({})".format(str(len(positive_reviews))),
+                                                className="align-bottom m-0"),
                                     ], className="col-8"),
                                     dbc.Col([
                                         positive_indicator
@@ -389,10 +435,8 @@ def make_reviews_card(product, feature_name):
                                 ], className="aling-items-end")
                             ], className="bg-success text-white"),
                             dbc.CardBody([
-                                positive_reviews[0] if len(positive_reviews) > 0 else None,
-                                positive_reviews[1] if len(positive_reviews) > 1 else None,
-                                positive_reviews[2] if len(positive_reviews) > 2 else None
-                            ])
+                                html.Div([positive_reviews[i] for i, review in enumerate(positive_reviews)])
+                            ], className="overflow-auto", style={"height": "360px"})
                         ], className=" shadow")
                     ],
                         className="col-4"),
@@ -401,15 +445,14 @@ def make_reviews_card(product, feature_name):
                             dbc.CardHeader([
                                 dbc.Row([
                                     dbc.Col([
-                                        html.H5("Neutral Reviews", className="align-bottom m-0"),
+                                        html.H5("Neutral Reviews ({})".format(str(len(neutral_reviews))),
+                                                className="align-bottom m-0"),
                                     ], className="col-8")
                                 ], className="aling-items-end")
                             ], className="bg-warning text-white"),
                             dbc.CardBody([
-                                neutral_reviews[0] if len(neutral_reviews) > 0 else None,
-                                neutral_reviews[1] if len(neutral_reviews) > 1 else None,
-                                neutral_reviews[2] if len(neutral_reviews) > 2 else None
-                            ])
+                                html.Div([neutral_reviews[i] for i, review in enumerate(neutral_reviews)])
+                            ], className="overflow-auto", style={"height": "360px"})
                         ], className=" shadow")
                     ],
                         className="col-4"),
@@ -418,7 +461,8 @@ def make_reviews_card(product, feature_name):
                             dbc.CardHeader([
                                 dbc.Row([
                                     dbc.Col([
-                                        html.H5("Negative Reviews", className="align-bottom m-0"),
+                                        html.H5("Negative Reviews ({})".format(str(len(negative_reviews))),
+                                                className="align-bottom m-0"),
                                     ], className="col-8"),
                                     dbc.Col([
                                         negative_indicator
@@ -426,10 +470,8 @@ def make_reviews_card(product, feature_name):
                                 ], className="aling-items-end")
                             ], className="bg-danger text-white"),
                             dbc.CardBody([
-                                negative_reviews[0] if len(negative_reviews) > 0 else None,
-                                negative_reviews[1] if len(negative_reviews) > 1 else None,
-                                negative_reviews[2] if len(negative_reviews) > 2 else None
-                            ])
+                                html.Div([negative_reviews[i] for i, review in enumerate(negative_reviews)])
+                            ], className="overflow-auto", style={"height": "360px"})
                         ], className=" shadow")
                     ],
                         className="col-4")
@@ -447,10 +489,14 @@ def make_reviews_card(product, feature_name):
      Input('button-feature-brand', 'n_clicks'),
      Input('button-feature-quality', 'n_clicks'),
      Input('button-feature-price', 'n_clicks'),
-     Input('button-feature-product', 'n_clicks')],
+     Input('button-feature-product', 'n_clicks'),
+     Input('button-feature-variety', 'n_clicks'),
+     Input('button-feature-package', 'n_clicks'),
+     Input('button-feature-smell', 'n_clicks'),
+     Input('button-feature-texture', 'n_clicks')],
     [State('memory', 'product')]
 )
-def update_output(button1, button2, button3, button4, button5, button6, product):
+def update_output(_b1, _b2, _b3, _b4, _b5, _b6, _b7, _b8, _b9, _b10, product):
     changed_id = [p['prop_id'] for p in dash.callback_context.triggered if p['value'] is not None]
     if len(changed_id) > 0:
         changed_id = changed_id[0]
@@ -466,6 +512,14 @@ def update_output(button1, button2, button3, button4, button5, button6, product)
         return make_reviews_card(product, 'price')
     elif 'button-feature-product' in changed_id:
         return make_reviews_card(product, 'product')
+    elif 'button-feature-package' in changed_id:
+        return make_reviews_card(product, 'package')
+    elif 'button-feature-variety' in changed_id:
+        return make_reviews_card(product, 'variety')
+    elif 'button-feature-smell' in changed_id:
+        return make_reviews_card(product, 'smell')
+    elif 'button-feature-texture' in changed_id:
+        return make_reviews_card(product, 'texture')
     else:
         raise PreventUpdate
 
