@@ -174,7 +174,8 @@ def exploratory_analysis():
 
 
 def print_sentiment_results():
-    dataframe = pd.read_csv(os.path.join(WORKING_DIRECTORY, 'assets', "sentiment-results-3.csv"), sep=',', index_col=0)
+    dataframe = pd.read_csv(os.path.join(WORKING_DIRECTORY, 'assets', "sentiment-results-socal-final.csv"), sep=',', index_col=0)
+    print(len(dataframe))
     dataframe['prediction'] = dataframe.apply(
         lambda x: 'positive' if x.prediction > 0 else 'negative' if x.prediction < 0 else 'neutral', axis=1)
     features = ["flavor", "taste", "product", "price", "quality", "brand", "texture", "package", "variety", "smell"]
@@ -191,21 +192,31 @@ def print_sentiment_results():
     plt.grid(axis='x')
     plt.title('Sentiment Analysis Results with SO-CAL', fontdict={"size": 20})
     plt.tick_params(labelsize=14)
+    plt.ylim([0,8000])
     plt.xlabel('Features', fontdict={"size": 14})
     plt.ylabel('Count', fontdict={"size": 14})
     plt.tight_layout()
     # plt.show()
-    plt.savefig(os.path.join(WORKING_DIRECTORY, 'assets', "sentiment-results.eps"), format="eps")
+    plt.savefig(os.path.join(WORKING_DIRECTORY, 'assets', "sentiment-results-socal-final.eps"), format="eps")
 
-
-preprocessing()
-
-exploratory_analysis()
-
-es = ElasticSearchClient()
-dataframe = es.get_statistics()
-dataframe.to_csv(os.path.join(WORKING_DIRECTORY, 'assets', 'sentiment-results-3.csv'))
-dataframe = pd.read_csv(os.path.join(WORKING_DIRECTORY, "assets", "sentiment-results-3.csv"), sep=',', index_col=0)
+#
+# preprocessing()
+#
+# exploratory_analysis()
+#
+# es = ElasticSearchClient()
+# dataframe = es.get_statistics()
+# dataframe.to_csv(os.path.join(WORKING_DIRECTORY, 'assets', 'sentiment-results-vader-final.csv'))
+dataframe = pd.read_csv(os.path.join(WORKING_DIRECTORY, "assets", "sentiment-results-socal-final.csv"), sep=',', index_col=0)
 print(dataframe)
 
 print_sentiment_results()
+
+
+# dataframe = pd.read_csv(os.path.join(WORKING_DIRECTORY, "assets", "food.csv"), sep=',', index_col=0).reset_index(
+#     drop=True)
+# products = dataframe['productid'].unique()
+# print(np.where(products == 'B001ACNWY8'))
+# print(len(products))
+
+

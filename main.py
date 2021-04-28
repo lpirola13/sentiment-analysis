@@ -115,14 +115,13 @@ def run_sentiment_analysis_with_SOCAL(dataframe, products, features):
             sentiment_output_path = ''
             n_saved_files = 0
             for row, review in dataframe[dataframe['productid'] == product].iterrows():
-                text = review['text'].lower()
+                text = review['text']
                 text = re.sub(r"http\S+", " ", text)
                 text = re.sub(r'<.*?>', ' ', text)
                 text = re.sub(r' +', ' ', text)
                 text = re.sub(r'\d', ' ', text)
                 text = re.sub(r'\.+', '. ', text)
                 text = re.sub(r'-', ' ', text)
-                text = re.sub(r'!', ' ', text)
                 text = re.sub(r'\(', ' ', text)
                 text = re.sub(r'\)', ' ', text)
                 text = re.sub(r'\$', ' ', text)
@@ -393,7 +392,7 @@ dataframe = pd.read_csv(os.path.join(WORKING_DIRECTORY, "assets", "food.csv"), s
     drop=True)
 products = dataframe['productid'].unique()
 
-find_features(dataframe, products)
+#find_features(dataframe, products)
 features = ["flavor", "taste", "product", "price", "quality", "brand", "texture", "package", "variety", "smell"]
 persist_products_and_reviews(dataframe, products)
 run_sentiment_analysis_with_VADER(dataframe, products, features)
