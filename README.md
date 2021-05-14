@@ -37,10 +37,6 @@ The smaller version is made up of a 35172 reviews and each of them contains the 
 * C. Hutto and E. Gilbert, “Vader:  A parsimonious rule-based model for sentimentanalysis of social media text,” inProceedings of the International AAAI Conferenceon Web and Social Media, vol. 8, no. 1, 2014.
 * R.  Campos,  V.  Mangaravite,  A.  Pasquali,  A.  Jorge,  C.  Nunes,  and  A.  Jatowt,“Yake!   keyword  extraction  from  single  documents  using  multiple  local  features,”Information Sciences, vol. 509, pp. 257–289, 2020.
 
-
-* Di Carlo, Valerio, Federico Bianchi, and Matteo Palmonari. "Training temporal word embeddings with a compass." Proceedings of the AAAI Conference on Artificial Intelligence. Vol. 33. No. 01. 2019.
-* Mikolov, Tomas, et al. "Efficient estimation of word representations in vector space." arXiv preprint arXiv:1301.3781 (2013).
-
 ## Authors
 * Lorenzo Pirola &nbsp;
 [![gmail](https://img.shields.io/badge/Gmail-D14836?style=flat-square&logo=gmail&logoColor=white)](mailto:l.pirola13@campus.unimib.it) &nbsp;
