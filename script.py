@@ -200,12 +200,12 @@ def print_sentiment_results():
 
 preprocessing()
 
-exploratory_analysis()
+#exploratory_analysis()
 
-es = ElasticSearchClient()
-dataframe = es.get_statistics()
-dataframe.to_csv(os.path.join(WORKING_DIRECTORY, 'assets', 'sentiment-results-3.csv'))
-dataframe = pd.read_csv(os.path.join(WORKING_DIRECTORY, "assets", "sentiment-results-3.csv"), sep=',', index_col=0)
-print(dataframe)
+#es = ElasticSearchClient()
+#dataframe = es.get_statistics()
+#dataframe.to_csv(os.path.join(WORKING_DIRECTORY, 'assets', 'sentiment-results-3.csv'))
+#dataframe = pd.read_csv(os.path.join(WORKING_DIRECTORY, "assets", "sentiment-results-3.csv"), sep=',', index_col=0)
+#print(dataframe)
 
-print_sentiment_results()
+#print_sentiment_results()

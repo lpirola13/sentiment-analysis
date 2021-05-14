@@ -71,7 +71,7 @@ def get_command_arguments():
                         help="The basic output")
 
     parser.add_argument('--config', '-c', type=str, dest='config', action='store',
-                        default='/Users/lorenzopirola/GitHub/pythonProject/Resources/config_files/en_SO_Calc.ini',
+                        default='/Users/lorenzopirola/GitHub/sentiment-analysis/Resources/config_files/en_SO_Calc.ini',
                         help="The configuration file for SO-CAL")
 
 

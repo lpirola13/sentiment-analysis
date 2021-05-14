@@ -43,7 +43,7 @@ def create_gold_file(input_path):
     :param input_path: input path of the preprocessed file or folder
     :return: the gold file path
     """
-    gold_folder = "/Users/lorenzopirola/GitHub/pythonProject/Resources/gold"
+    gold_folder = "/Users/lorenzopirola/GitHub/sentiment-analysis/Resources/gold"
     if not os.path.exists(gold_folder):
         os.mkdir(gold_folder)
     gold_output = gold_folder + "gold.txt"

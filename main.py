@@ -1,4 +1,6 @@
 import csv
+from time import time, sleep
+
 import nltk
 import numpy as np
 import os
@@ -115,18 +117,11 @@ def run_sentiment_analysis_with_SOCAL(dataframe, products, features):
             sentiment_output_path = ''
             n_saved_files = 0
             for row, review in dataframe[dataframe['productid'] == product].iterrows():
-                text = review['text'].lower()
+                text = review['text']
                 text = re.sub(r"http\S+", " ", text)
                 text = re.sub(r'<.*?>', ' ', text)
                 text = re.sub(r' +', ' ', text)
-                text = re.sub(r'\d', ' ', text)
                 text = re.sub(r'\.+', '. ', text)
-                text = re.sub(r'-', ' ', text)
-                text = re.sub(r'!', ' ', text)
-                text = re.sub(r'\(', ' ', text)
-                text = re.sub(r'\)', ' ', text)
-                text = re.sub(r'\$', ' ', text)
-                text = re.sub(r'\"', ' ', text)
                 text = re.sub(r'%', ' ', text)
                 if feature in text:
                     feature_found = True
@@ -226,6 +221,7 @@ def run_sentiment_analysis_with_SOCAL(dataframe, products, features):
 
 
 def run_sentiment_analysis_with_VADER(dataframe, products, features):
+    times = []
     sid_obj = SentimentIntensityAnalyzer()
     for product in products:
         print('PRODUCT {}'.format(product))
@@ -240,13 +236,7 @@ def run_sentiment_analysis_with_VADER(dataframe, products, features):
                 text = re.sub(r"http\S+", " ", text)
                 text = re.sub(r'<.*?>', ' ', text)
                 text = re.sub(r' +', ' ', text)
-                text = re.sub(r'\d', ' ', text)
                 text = re.sub(r'\.+', '. ', text)
-                text = re.sub(r'-', ' ', text)
-                text = re.sub(r'\(', ' ', text)
-                text = re.sub(r'\)', ' ', text)
-                text = re.sub(r'\$', ' ', text)
-                text = re.sub(r'\"', ' ', text)
                 text = re.sub(r'%', ' ', text)
                 if feature in text:
                     feature_found = True
@@ -266,7 +256,9 @@ def run_sentiment_analysis_with_VADER(dataframe, products, features):
                 print('\tFEATURE {} SENTIMENT ANALYSIS'.format(feature))
                 for sentence_dict in sentences:
                     sentence = sentence_dict['sentence']
+                    start_time = time()
                     sentiment_dict = sid_obj.polarity_scores(sentence)
+                    times.append(time() - start_time)
                     if sentiment_dict['compound'] >= 0.05:
                         score = round(sentiment_dict['compound'], 2)
                         sentiment = 'positive'
@@ -334,6 +326,7 @@ def run_sentiment_analysis_with_VADER(dataframe, products, features):
         product_object.meta.id = product
         product_object.update(features=features_to_save)
         print('\n\n')
+    print("AVG TIME {}".format(str(np.mean(times))))
 
 
 def find_features(dataframe, products):
@@ -396,4 +389,7 @@ products = dataframe['productid'].unique()
 find_features(dataframe, products)
 features = ["flavor", "taste", "product", "price", "quality", "brand", "texture", "package", "variety", "smell"]
 persist_products_and_reviews(dataframe, products)
+run_sentiment_analysis_with_SOCAL(dataframe, products, features)
 run_sentiment_analysis_with_VADER(dataframe, products, features)
+
+
