@@ -97,7 +97,10 @@ def run_sentiment_analysis_with_SOCAL(dataframe, products, features):
 
     config_file = os.path.join(WORKING_DIRECTORY, "Resources", "config_files", "en_SO_Calc.ini")
 
+    times = []
+
     for product in products:
+        times_product = []
         print('PRODUCT {}'.format(product))
         # Creo la cartella del prodotto in input
         product_input_path = os.path.join(input_path, product)
@@ -151,10 +154,14 @@ def run_sentiment_analysis_with_SOCAL(dataframe, products, features):
                 p = Preprocess(feature_input_path, feature_output_path, 'tokenize,ssplit,pos')
                 p.pos_tagging()
                 print('\tFEATURE {} SENTIMENT ANALYSIS'.format(feature))
+                start_time = time()
                 SO_Run.main(feature_output_path, sentiment_output_path, config_file, 0.0)
+                end_time = time() - start_time
                 sentiment_file = os.path.join(sentiment_output_path, "file_sentiment.csv")
                 sentiment_dataframe = pd.read_csv(sentiment_file, header=0, sep=',')
                 sentiment_dataframe = sentiment_dataframe.sort_values('File_Name')
+                end_time = end_time / len(sentiment_dataframe.index)
+                times_product.append(end_time)
                 print('\tFEATURE {} RESULTS'.format(feature))
                 print('\t\tNUMBER OF REVIEWS {}'.format(len(sentiment_dataframe.index)))
                 positive = len(sentiment_dataframe[sentiment_dataframe['Sentiment'] == 'positive'].index)
@@ -218,12 +225,18 @@ def run_sentiment_analysis_with_SOCAL(dataframe, products, features):
         product_object.meta.id = product
         product_object.update(features=features_to_save)
         print('\n\n')
+        if len(times_product) > 0:
+            avg_time = np.mean(times_product)
+            times.append(avg_time)
+            print("AVG TIME PRODUCT {}".format(str(avg_time)))
+    print("AVG TIME {}".format(str(np.mean(times))))
 
 
 def run_sentiment_analysis_with_VADER(dataframe, products, features):
     times = []
     sid_obj = SentimentIntensityAnalyzer()
     for product in products:
+        times_product = []
         print('PRODUCT {}'.format(product))
         features_to_save = []
         for feature in features:
@@ -258,7 +271,7 @@ def run_sentiment_analysis_with_VADER(dataframe, products, features):
                     sentence = sentence_dict['sentence']
                     start_time = time()
                     sentiment_dict = sid_obj.polarity_scores(sentence)
-                    times.append(time() - start_time)
+                    times_product.append(time() - start_time)
                     if sentiment_dict['compound'] >= 0.05:
                         score = round(sentiment_dict['compound'], 2)
                         sentiment = 'positive'
@@ -326,6 +339,10 @@ def run_sentiment_analysis_with_VADER(dataframe, products, features):
         product_object.meta.id = product
         product_object.update(features=features_to_save)
         print('\n\n')
+        if len(times_product) > 0:
+            avg_time = np.mean(times_product)
+            times.append(avg_time)
+            print("AVG TIME PRODUCT {}".format(str(avg_time)))
     print("AVG TIME {}".format(str(np.mean(times))))
 
 
@@ -386,10 +403,10 @@ dataframe = pd.read_csv(os.path.join(WORKING_DIRECTORY, "assets", "food.csv"), s
     drop=True)
 products = dataframe['productid'].unique()
 
-find_features(dataframe, products)
+#find_features(dataframe, products)
 features = ["flavor", "taste", "product", "price", "quality", "brand", "texture", "package", "variety", "smell"]
-persist_products_and_reviews(dataframe, products)
+#persist_products_and_reviews(dataframe, products)
 run_sentiment_analysis_with_SOCAL(dataframe, products, features)
-run_sentiment_analysis_with_VADER(dataframe, products, features)
+#run_sentiment_analysis_with_VADER(dataframe, products, features)
 
 

@@ -5,7 +5,7 @@
 
 
 <div align="justify">
-This project aims to develop a web application that can help e-commerce users and product suppliers understand which are the strengths and weaknesses of products sold online. This information is the result of applying a feature-based sentiment analysis on customer reviews coming from Amazon. The used approach is based on three main steps: features extraction from products, opinion orientation identification, and results' summarization. Regarding opinion orientation identification, two methods were compared. The first is based on "The Semantic Orientation CALculator" (SO-CAL) framework while the other relies on the "for Valence Aware Dictionary for sEntiment Reasoning" (VADER) framework.
+This project aims to develop a web application that can help e-commerce users and product suppliers understand which are the strengths and weaknesses of products sold online. This information is the result of applying a feature-based sentiment analysis on customer reviews coming from Amazon. The used approach is based on three main steps: features extraction from products, opinion orientation identification, and results' summarization. Regarding opinion orientation identification, two methods were compared. The first is based on "The Semantic Orientation CALculator" (SO-CAL) framework, while the other relies on the "for Valence Aware Dictionary for sEntiment Reasoning" (VADER) framework.
 </div>
 
 ## Requirements

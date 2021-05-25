@@ -15,7 +15,6 @@ app = dash.Dash(__name__,
 
 navbar = dbc.NavbarSimple([
     dbc.NavItem(dbc.NavLink("Search Product", href='/search', className="text-white")),
-    dbc.NavItem(dbc.NavLink("About", href='/about', className="text-white"))
 ],
     brand="Feature-Based Sentiment Analysis",
     brand_href="/search",
@@ -64,13 +63,6 @@ homepage = html.Div([
                                     ], className="w-100", style={"line-height": "1"}),
                                     dbc.Row([
                                         dbc.Col(
-                                            ' know this question is old. And the question did not mentioned which version of '
-                                            'Bootstrap he was using. So ill assume the answer to this question is resolved.',
-                                            className=" pr-3 pl-3 pt-3 pb-4 text-justify"
-                                        )
-                                    ], className="w-100"),
-                                    dbc.Row([
-                                        dbc.Col(
                                             dcc.Dropdown(placeholder="Select a product", id="search-dropdown"),
                                             width=10
                                         ),
@@ -78,7 +70,7 @@ homepage = html.Div([
                                             dbc.Button("Search!", color="primary", className="mr-1", id="start-search"),
                                             width=2
                                         )
-                                    ], className="w-100")
+                                    ], className="w-100 pt-3")
                                 ], className="h-100 container-fluid",
                                     style={"padding-top": "35%"})
                             ],
@@ -345,7 +337,7 @@ def make_review(review, feature):
         pat = r'\b\S*%s\S*\b' % re.escape(feature)
         matches = re.findall(pat, text)
         for match in matches:
-            text = re.sub(r'(?<!\*){}(?!\*)'.format(match), '**{}**'.format(match), text)
+            text = re.sub(r'(?<!\*){}(?!\*)'.format(re.escape(match)), '**{}**'.format(match), text)
     else:
         text = ""
     stars = make_stars(review['rating'])
@@ -541,4 +533,4 @@ def display_page(pathname):
 
 if __name__ == '__main__':
     es = ElasticSearchClient()
-    app.run_server(debug=True)
+    app.run_server()

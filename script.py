@@ -198,14 +198,22 @@ def print_sentiment_results():
     plt.savefig(os.path.join(WORKING_DIRECTORY, 'assets', "sentiment-results.eps"), format="eps")
 
 
-preprocessing()
+#preprocessing()
 
 #exploratory_analysis()
 
-#es = ElasticSearchClient()
-#dataframe = es.get_statistics()
-#dataframe.to_csv(os.path.join(WORKING_DIRECTORY, 'assets', 'sentiment-results-3.csv'))
-#dataframe = pd.read_csv(os.path.join(WORKING_DIRECTORY, "assets", "sentiment-results-3.csv"), sep=',', index_col=0)
-#print(dataframe)
+es = ElasticSearchClient()
+dataframe = es.get_statistics()
+dataframe.to_csv(os.path.join(WORKING_DIRECTORY, 'assets', 'sentiment-results-3.csv'))
+dataframe = pd.read_csv(os.path.join(WORKING_DIRECTORY, "assets", "sentiment-results-3.csv"), sep=',', index_col=0)
+print(dataframe)
 
-#print_sentiment_results()
+print_sentiment_results()
+
+# dataframe = pd.read_csv(os.path.join(WORKING_DIRECTORY, "assets", "food.csv"), sep=',', index_col=0).reset_index(
+#     drop=True)
+# products = dataframe['productid'].unique()
+#
+# print(np.where(products == 'B0047E2I5U'))
+
+
