@@ -25,6 +25,11 @@ The smaller version is made up of a 35172 reviews and each of them contains the 
 * <i>preprocess.py</i>, <i>SO_Calc.py</i> and <i>SO_Run.py</i> and the directory <i>Resources</i> are adapted from the SO-CAL python library (https://github.com/sfu-discourse-lab/SO-CAL)
 
 
+## Screenshots
+
+<div aling="center">
+<img src="https://user-images.githubusercontent.com/62723502/123303598-40ede600-d51e-11eb-8344-65d949d67fc8.png"></img>
+</div>
 
 ## References
 
